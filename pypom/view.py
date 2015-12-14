@@ -49,8 +49,8 @@ class WebView(object):
 
     def find_element(self, locator):
         """
-        Calls ``find_element`` on ``self.root`` which is either an instance of Selenium
-        or a WebElement.
+        Calls ``find_element`` on ``self.root`` which is either an instance
+        of Selenium or a WebElement.
 
         :param locator:
             A locator that selenium can understand.
@@ -62,8 +62,8 @@ class WebView(object):
 
     def find_elements(self, locator):
         """
-        Calls ``find_elements`` on ``self.root`` which is either an instance of Selenium
-        or a WebElement.
+        Calls ``find_elements`` on ``self.root`` which is either an instance
+        of Selenium or a WebElement.
 
         :param locator:
             A locator that selenium can understand.
