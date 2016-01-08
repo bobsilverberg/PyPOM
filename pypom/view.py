@@ -74,12 +74,30 @@ class WebView(object):
         return self.root.find_elements(*locator)
 
     def is_element_present(self, locator):
+        """
+        Checks whether a given element is present in the DOM.
+
+        :param locator:
+            A locator that selenium can understand.
+
+        :returns:
+            A boolean indicating the presence of the element.
+        """
         try:
             return self.find_element(locator)
         except NoSuchElementException:
             return False
 
     def is_element_displayed(self, locator):
+        """
+        Checks whether a given element is displayed in the browser.
+
+        :param locator:
+            A locator that selenium can understand.
+
+        :returns:
+            A boolean indicating the visibility of the element.
+        """
         try:
             return self.find_element(locator).is_displayed()
         except NoSuchElementException:
