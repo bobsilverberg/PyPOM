@@ -2,18 +2,62 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+try:
+    from urlparse import urljoin
+except ImportError:
+    from urllib.parse import urljoin
+
 from .view import WebView
 
 
 class Page(WebView):
 
-    _url = '{base_url}'
+    URL_TEMPLATE = ''
     """String representing a URL that will return this page.
 
     This string is formatted and can contain names of keyword arguments passed
-    during construcion of the page object. The ``{base_url}`` keyword argument
-    is always passed to the format operation.
+    during construction of the page object. The template should either assume
+    that the value of ``base_url`` will be prepended to the result of the
+    format, or should yield an absolute URL.
     """
+
+    @property
+    def target_url(self):
+        """
+        Returns the URL to the current page,
+        formatted from :py:data:`URL_TEMPLATE`.
+        Unless URL_TEMPLATE results in an absolute URL, ``self.base_url`` is
+        prepended to the resulting URL.
+
+        :returns:
+            String representing a URL that will return this page.
+        """
+        return urljoin(self.base_url,
+                       self.URL_TEMPLATE.format(**self.url_kwargs))
+
+    def find_element(self, locator):
+        """
+        Calls ``selenium.find_element``.
+
+        :param locator:
+            A locator that Selenium can understand.
+
+        :returns:
+            The first WebElement found using ``locator``.
+        """
+        return self.selenium.find_element(*locator)
+
+    def find_elements(self, locator):
+        """
+        Calls ``selenium.find_elements``.
+
+        :param locator:
+            A locator that Selenium can understand.
+
+        :returns:
+            A list of all WebElements found using ``locator``.
+        """
+        return self.selenium.find_elements(*locator)
 
     def open(self):
         """
@@ -23,24 +67,15 @@ class Page(WebView):
         :returns:
             The current page object (i.e., ``self``).
         """
-        self.selenium.get(self.url)
+        self.selenium.get(self.target_url)
         self.wait_for_page_to_load()
         return self
-
-    @property
-    def url(self):
-        """
-        Returns the URL to the current page, formatted from :py:data:`_url`.
-
-        :returns:
-            String representing a URL that will return this page.
-        """
-        return self._url.format(base_url=self.base_url, **self.kwargs)
 
     def wait_for_page_to_load(self):
         """
         Waits for the page to load by waiting until the URL reported by
-        Selenium is the same as that returned by the :py:func:`url` property.
+        Selenium is the same as that returned by the :py:func:`url` property,
+        if the :py:func:`url` property has a value.
 
         Note that it is common to extend or override this method
         to provide custom wait behaviour.
@@ -48,5 +83,6 @@ class Page(WebView):
         :returns:
             The current page object (i.e., ``self``).
         """
-        self.wait.until(lambda s: self.url in s.current_url)
+        if self.target_url:
+            self.wait.until(lambda s: self.target_url in s.current_url)
         return self

@@ -10,20 +10,42 @@ from pypom import Page
 
 
 def test_base_url(base_url, page):
-    assert base_url == page.url
+    assert base_url == page.target_url
 
 
-def test_url_keywords(base_url, selenium):
+def test_target_url_prepend(selenium):
+    value = str(random.random())
+    base_url = 'https://www.mozilla.org/'
+
+    class MyPage(Page):
+        URL_TEMPLATE = '{key}'
+    page = MyPage(selenium, 'foo', key=value)
+    page.base_url = base_url
+    assert base_url + value == page.target_url
+
+
+def test_target_url_absolute(selenium):
+    url_template = 'https://www.test.com'
+    base_url = 'https://www.mozilla.org/'
+
+    class MyPage(Page):
+        URL_TEMPLATE = url_template
+    page = MyPage(selenium, base_url)
+    page.base_url = base_url
+    assert url_template == page.target_url
+
+
+def test_target_url_keywords(selenium):
     value = str(random.random())
 
     class MyPage(Page):
-        _url = '{key}'
-    page = MyPage('foo', selenium, key=value)
-    assert value == page.url
+        URL_TEMPLATE = '{key}'
+    page = MyPage(selenium, 'foo', key=value)
+    assert value == page.target_url
 
 
 def test_open(page, selenium):
-    selenium.current_url = page.url
+    selenium.current_url = page.target_url
     assert isinstance(page.open(), Page)
 
 
@@ -35,7 +57,7 @@ def test_open_timeout(page, selenium):
 
 
 def test_wait_for_page(page, selenium):
-    selenium.current_url = page.url
+    selenium.current_url = page.target_url
     assert isinstance(page.wait_for_page_to_load(), Page)
 
 
@@ -44,6 +66,12 @@ def test_wait_for_page_timeout(page, selenium):
     selenium.current_url = str(random.random())
     with pytest.raises(TimeoutException):
         page.wait_for_page_to_load()
+
+
+def test_wait_for_page_empty_base_url(page, selenium):
+    selenium.current_url = str(random.random())
+    page.base_url = None
+    assert isinstance(page.wait_for_page_to_load(), Page)
 
 
 def test_find_element(page, selenium):

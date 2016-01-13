@@ -29,7 +29,10 @@ class Region(WebView):
         :param kwargs:
             Dictionary of arguments to pass into the parent's ``__init__``.
         """
-        super(Region, self).__init__(page.base_url, page.selenium, **kwargs)
+        super(Region, self).__init__(page.selenium,
+                                     page.base_url,
+                                     page.timeout,
+                                     **kwargs)
         self._root_element = root
         self.page = page
 
@@ -39,7 +42,7 @@ class Region(WebView):
         Returns the root from which Selenium find commands will
         operate for this Region.
 
-        If a ``root_element`` was passed into the constructor,
+        If a ``root`` was passed into the constructor,
         that element will be returned as the root.
         If a locator was specified in :py:data:`_root_locator`,
         the element found using that locator will be returned as the root.
@@ -51,3 +54,29 @@ class Region(WebView):
                 return self.selenium.find_element(*self._root_locator)
             return self.selenium
         return self._root_element
+
+    def find_element(self, locator):
+        """
+        Calls ``find_element`` on ``self.root`` which is either an instance
+        of Selenium or a WebElement.
+
+        :param locator:
+            A locator that Selenium can understand.
+
+        :returns:
+            The first WebElement found using ``locator``.
+        """
+        return self.root.find_element(*locator)
+
+    def find_elements(self, locator):
+        """
+        Calls ``find_elements`` on ``self.root`` which is either an instance
+        of Selenium or a WebElement.
+
+        :param locator:
+            A locator that Selenium can understand.
+
+        :returns:
+            A list of all WebElements found using ``locator``.
+        """
+        return self.root.find_elements(*locator)

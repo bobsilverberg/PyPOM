@@ -21,9 +21,9 @@ def element(selenium):
 
 
 @pytest.fixture
-def page(base_url, selenium):
+def page(selenium, base_url):
     from pypom import Page
-    return Page(base_url, selenium)
+    return Page(selenium, base_url)
 
 
 @pytest.fixture
